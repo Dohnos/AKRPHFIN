@@ -108,37 +108,33 @@ function ensurePortrait(file) {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         
-        let targetWidth = img.width;
-        let targetHeight = img.height;
+        canvas.width = 1600;
+        canvas.height = 1600;
         
-        if (targetWidth > targetHeight) {
-          // Obrázek je na šířku -> otočíme o 90° na výšku
-          canvas.width = targetHeight;
-          canvas.height = targetWidth;
-          ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate(90 * Math.PI / 180);
-          ctx.drawImage(img, -targetWidth / 2, -targetHeight / 2);
-        } else {
-          // Obrázek je na výšku -> překreslíme 1:1, abychom vypálili orientaci do pixelů
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-        }
+        // Zjistíme menší z rozměrů pro čtvercový ořez
+        const size = Math.min(img.width, img.height);
+        
+        // Vypočteme souřadnice pro středový ořez
+        const sourceX = (img.width - size) / 2;
+        const sourceY = (img.height - size) / 2;
+        
+        // Vykreslíme výřez na cílovou velikost 1600x1600 px
+        ctx.drawImage(img, sourceX, sourceY, size, size, 0, 0, 1600, 1600);
 
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const rotatedFile = new File([blob], file.name, {
+              const croppedFile = new File([blob], file.name, {
                 type: "image/jpeg",
                 lastModified: Date.now()
               });
-              resolve(rotatedFile);
+              resolve(croppedFile);
             } else {
               resolve(file);
             }
           },
           "image/jpeg",
-          0.98 // Velmi vysoká kvalita pro zachování kvality na Cloudinary
+          0.98
         );
       };
       img.onerror = () => resolve(file);
@@ -146,6 +142,7 @@ function ensurePortrait(file) {
     reader.onerror = () => resolve(file);
   });
 }
+
 
 // Vrátí YYYY-MM-DD
 function getTodayDateString() {
