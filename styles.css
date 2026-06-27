@@ -1,0 +1,220 @@
+/* Obecné základní styly */
+
+/* Skrytí sekcí */
+.is-hidden {
+  display: none !important;
+}
+
+/* Zvýraznění boxu při hoveru */
+.step:hover {
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Přechod pro status text */
+#status {
+  transition: all 0.3s ease;
+}
+
+/* Nudges pro button hover */
+.button:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Seznam kategorií uvnitř modálu */
+#category-list button {
+  border: none;
+  background: none;
+  text-align: left;
+  width: 100%;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#category-list button:hover {
+  background-color: #f2f2f2;
+}
+
+/* Progres bar (Bulma style je nativní, tady jen drobné úpravy) */
+.progress {
+  margin-top: 0.5rem;
+  transition: width 0.3s ease;
+}
+
+body {
+  background: #f8f9fa;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  font-size: 1.15rem;
+  color: #222;
+}
+
+.container {
+  max-width: 540px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+  padding: 2.5rem 2rem 2rem 2rem;
+}
+
+.title, .label {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+input.input, select, .button {
+  font-size: 1.1rem;
+  border-radius: 1.5rem;
+  padding: 1.1em 1.2em;
+}
+
+input.input {
+  padding-right: 2.5em; /* Větší padding pro křížek */
+}
+
+.button {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.box {
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  background: #fff;
+  padding: 2rem 1.5rem;
+}
+
+/* Minimalistický progress bar */
+.progress-container {
+  margin-bottom: 2rem;
+}
+.progress-bar-bg {
+  background: #e9ecef;
+  border-radius: 1rem;
+  height: 8px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar-fill {
+  background: linear-gradient(90deg, #00c3ff 0%, #ffff1c 100%);
+  height: 100%;
+  width: 0%;
+  border-radius: 1rem;
+  transition: width 0.4s cubic-bezier(.4,2,.6,1);
+}
+.progress-steps, .step-label { display: none !important; }
+
+/* Input historie a autocomplete */
+.input-history {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.2em;
+  font-size: 0.98em;
+  color: #888;
+  min-height: 1.2em;
+  flex-wrap: wrap;
+}
+.input-history .history-item {
+  background: #f2f2f2;
+  border-radius: 1em;
+  padding: 0.15em 0.8em;
+  margin-bottom: 0.1em;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: 1px solid #e0e0e0;
+}
+.input-history .history-item:hover {
+  background: #e0f7fa;
+  color: #111;
+}
+
+/* Křížek pro vymazání inputu */
+.has-relative { position: relative; }
+.clear-input-btn {
+  position: absolute;
+  right: 0.7em;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 1.3em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.2em;
+  z-index: 2;
+  opacity: 0.7;
+  transition: color 0.2s, opacity 0.2s;
+}
+.clear-input-btn:hover {
+  color: #ff7675;
+  opacity: 1;
+}
+
+.field {
+  margin-bottom: 2rem;
+}
+
+.input:focus, select:focus {
+  border-color: #00b894;
+  box-shadow: 0 0 0 2px #00b89422;
+}
+
+/* Chybové hlášky pod pole */
+.input-error {
+  border-color: #ff7675 !important;
+}
+.error-message {
+  color: #ff7675;
+  font-size: 1rem;
+  margin-top: 0.3em;
+  margin-bottom: -1.2em;
+  min-height: 1.2em;
+}
+
+/* Kategorie hierarchicky */
+.category-group {
+  font-weight: 600;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  color: #636e72;
+  font-size: 1.05em;
+}
+
+#category-list button {
+  border-radius: 1.2em;
+  margin-bottom: 0.2em;
+  background: #f7f7fa;
+  color: #222;
+  font-size: 1.08em;
+}
+#category-list button:hover {
+  background: #e0f7fa;
+}
+
+.modal-content {
+  border-radius: 1.5rem;
+}
+
+/* Jemný overlay pro modal */
+.modal-background {
+  background: rgba(0,0,0,0.18) !important;
+}
+
+.category-selected {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 1.1em;
+  color: #00b894;
+  font-weight: 600;
+  margin-top: 0.2em;
+}
+.category-selected .fa-check {
+  color: #00b894;
+  font-size: 1.2em;
+}

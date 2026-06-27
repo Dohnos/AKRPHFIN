@@ -1,0 +1,230 @@
+### Hlavní kategorie a podkategorie
+
+#### 1. Starožitná bižuterie a šperky
+- **Obecné bižuterie**
+  - Ostatní starožitná bižuterie (130363)
+  - Repliky starožitností (47099) – pokud zahrnují bižuterii
+- **Specifické typy bižuterie**
+  - Starožitné bižuterní brože (130368)
+  - Starožitné bižuterní náramky (130367)
+  - Starožitné bižuterní náušnice (130366)
+  - Starožitné bižuterní prsteny (130365)
+  - Starožitné bižuterní přívěsky, řetízky, náhrdelníky (130364)
+- **Stříbrné šperky**
+  - Ostatní starožitné stříbrné šperky (55735)
+  - Starožitné stříbrné brože (55730)
+  - Starožitné stříbrné náramky (55731)
+  - Starožitné stříbrné náušnice (55732)
+  - Starožitné stříbrné prsteny (55733)
+  - Starožitné stříbrné přívěsky, řetízky a náhrdelníky (55734)
+- **Zlaté šperky**
+  - Ostatní starožitné zlato (55729)
+  - Starožitné zlaté brože (55724)
+  - Starožitné zlaté náramky (55725)
+  - Starožitné zlaté náušnice (55726)
+  - Starožitné zlaté prsteny (55727)
+  - Starožitné zlaté přívěsky, řetízky a náhrdelníky (55728)
+- **Ostatní šperky**
+  - Ostatní starožitné šperky (55723)
+
+#### 2. Starožitná keramika a porcelán
+- **Keramika**
+  - Ostatní starožitná keramika (90553)
+  - Starožitné keramické dekorativní předměty (90557)
+  - Starožitné keramické dózy (90556)
+  - Starožitné keramické džbány a džbánky (90561)
+  - Starožitné keramické formy na pečení (90562)
+  - Starožitné keramické hrnce (90559)
+  - Starožitné keramické hrnky a hrnečky (90560)
+  - Starožitné keramické korbele (90554)
+  - Starožitné keramické mísy a misky (90564)
+  - Starožitné keramické servisy a sady (90563)
+  - Starožitné keramické tácy a podnosy (90565)
+  - Starožitné keramické talíře a talířky (90555)
+  - Starožitné keramické vázy (90558)
+- **Porcelán**
+  - Ostatní starožitný porcelán (47122)
+  - Starožitné porcelánové cukřenky (47109)
+  - Starožitné porcelánové hrnky, šálky a koflíky (47111)
+  - Starožitné porcelánové konvice a konvičky (47112)
+  - Starožitné porcelánové mísy a tácy (47113)
+  - Starožitné porcelánové mléčenky, džbánky (47114)
+  - Starožitné porcelánové mokka (47115)
+  - Starožitné porcelánové omáčníky a teriny (47116)
+  - Starožitné porcelánové servisy (47117)
+  - Starožitné porcelánové slánky a kořenky (47118)
+  - Starožitné porcelánové snídanové sady (47119)
+  - Starožitné porcelánové talíře (47120)
+  - Starožitné porcelánové vázy a dózy (47121)
+  - Starožitný figurální porcelán a porcelánové figurky (47110)
+
+#### 3. Starožitné sklo
+- Ostatní starožitné sklo (90566)
+- Starožitná skleněná těžítka (90576)
+- Starožitné skleněné cukřenky (90577)
+- Starožitné skleněné číše a poháry (90579)
+- Starožitné skleněné dekorativní předměty (90570)
+- Starožitné skleněné dózy (90568)
+- Starožitné skleněné džbány (90581)
+- Starožitné skleněné figurky (90569)
+- Starožitné skleněné karafy (90573)
+- Starožitné skleněné korbele (90567)
+- Starožitné skleněné mísy a misky (90574)
+- Starožitné skleněné popelníky (90575)
+- Starožitné skleněné soupravy (90580)
+- Starožitné skleněné tácy a podnosy (90578)
+- Starožitné skleněné vázy (90571)
+- Starožitné sklenice (90572)
+
+#### 4. Starožitné kovy a kovové předměty
+- **Obecné kovové předměty**
+  - Ostatní starožitné kovové předměty (90590)
+  - Starožitné kovové dekorativní předměty (90593)
+- **Kovové nádoby a nádobí**
+  - Starožitné kovové džbány a džbánky (90598)
+  - Starožitné kovové karafy (90597)
+  - Starožitné kovové konvice a konvičky (90591)
+  - Starožitné kovové korbele (90595)
+  - Starožitné kovové mísy a misky (90592)
+  - Starožitné kovové pánve, hrnce a kotlíky (90601)
+  - Starožitné kovové poháry (90596)
+  - Starožitné kovové tácy, tácy a podnosy (90599)
+  - Starožitné kovové talíře (90600)
+- **Kovové nástroje a vybavení**
+  - Starožitné klíče a zámky (256815)
+  - Starožitné kovové formy na pečení (90658)
+  - Starožitné kovové příbory (90605)
+  - Starožitné kovové stojany a stojánky (90604)
+  - Starožitné kovové váhy a závaží (90602)
+  - Starožitné kovové zvonky (90594)
+  - Starožitné kovové žehličky (90603)
+  - Starožitné kuchyňské vybavení (256819)
+  - Starožitné nářadí (256821)
+  - Starožitné podkovy (256816)
+  - Starožitné sekery a sekačky (256813)
+- **Stříbrné a postříbřené předměty**
+  - Starožitné postříbřené předměty, alpaka (55719)
+  - Starožitné stříbrné předměty (55718)
+- **Kovové mlýnky**
+  - Starožitné mlýnky (90588)
+
+#### 5. Starožitné hodiny a hodinky
+- Ostatní příslušenství k starožitným hodinám a hodinkám (47085)
+- Starožitné budíky (47079)
+- Starožitné kapesní hodinky a stopky (47080)
+- Starožitné náramkové hodinky (47081)
+- Starožitné nástěnné hodiny (47082)
+- Starožitné podlahové hodiny (47083)
+- Starožitné stolní, krbové hodiny (47084)
+
+#### 6. Starožitná technika a elektronika
+- **Rádia a příslušenství**
+  - Ostatní starožitná rádia a technika (47097)
+  - Starožitná rádia (47096)
+  - Starožitná sluchátka (256812)
+  - Starožitné elektro součástky (47092)
+- **Gramofony a přehrávače**
+  - Starožitné gramofony (47093)
+  - Starožitné magnetofony a kazetáky (256809)
+- **Kamery a projektory**
+  - Starožitné kamery (256810)
+  - Starožitné promítačky a projektory (47095)
+- **Ostatní technika**
+  - Starožitné měřicí přístroje (256811)
+  - Starožitné psací stroje (47143)
+  - Starožitné telefony (256781)
+  - Starožitné televizory (47144)
+  - Literatura o starožitných rádiích a technice (47094)
+
+#### 7. Starožitné osvětlení
+- Příslušenství k starožitným lampám (90583)
+- Příslušenství k starožitným lustrům (90585)
+- Příslušenství k starožitným svícnům (90587)
+- Starožitné lampy (90582)
+- Starožitné lustry (90584)
+- Starožitné svícny (90586)
+
+#### 8. Starožitné cedule a reklamní materiály
+- Ostatní starožitné cedule (52430)
+- Starožitné papírové cedule (52429)
+- Starožitné plastové cedule (256856)
+- Starožitné plechové cedule (52427)
+- Starožitné smaltované cedule (52428)
+- Světelné cedule (256855)
+- Staré reklamní materiály (47062)
+
+#### 9. Starožitné hračky
+- Ostatní starožitné hračky (257196)
+- Starožitná autíčka (257199)
+- Starožitné figurky (257201)
+- Starožitné hry a hlavolamy (257203)
+- Starožitné loutky (257202)
+- Starožitné panenky a příslušenství (257198)
+- Starožitné plyšové a látkové hračky (257204)
+- Starožitné stavebnice (257200)
+
+#### 10. Starožitný nábytek
+- Ostatní starožitný nábytek (79725)
+- Příslušenství k starožitnému nábytku (79740)
+- Starožitná zrcadla (79738)
+- Starožitné knihovny (79728)
+- Starožitné komody (79729)
+- Starožitné kredence a příborníky (79730)
+- Starožitná křesla, sofa a divany (79731)
+- Starožitné ložnice a postele (79732)
+- Starožitné nábytkové sestavy (79733)
+- Starožitné skříně a skleníky (79735)
+- Starožitné stoly a stolky (79734)
+- Starožitné toaletky (79727)
+- Starožitné truhly a kufry (79736)
+- Starožitné věšáky (79737)
+- Starožitné vitríny a regály (79726)
+- Starožitné židle (79739)
+
+#### 11. Umění a výtvarné předměty
+- **Obrazy a grafika**
+  - Starožitné obrazy – olejomalby (144762)
+  - Výtvarné umění akryl (144763)
+  - Výtvarné umění akvarel (144764)
+  - Výtvarné umění koláž (144768)
+  - Výtvarné umění kombinovaná technika (144769)
+  - Výtvarné umění kresba (144770)
+  - Grafika Ex Libris (144766)
+  - Umělecká (volná) grafika (144767)
+  - Reprodukce výtvarného umění (144771)
+- **Sochy a figurky**
+  - Starožitné sochy (47101)
+  - Umělecká autorská díla (130342)
+- **Fotografie a design**
+  - Umělecké fotografie (144784)
+  - Umělecký průmyslový design (144786)
+- **Ostatní umění**
+  - Ostatní výtvarné umění (144772)
+  - Umělecké sklo a keramika (144787)
+  - Sochařství (144788)
+  - Malířské stojany (144777)
+  - Rámy (144780)
+  - Ostatní kreslířské potřeby (144783)
+  - Ostatní umění (144790)
+
+#### 12. Starožitné tiskoviny a papírové předměty
+- Staré časopisy (47054)
+- Staré dokumenty (47055)
+- Staré fotografie (47056)
+- Staré kalendáře (47058)
+- Staré letáky (47059)
+- Staré plakáty (47061)
+- Staré reklamní materiály (47062)
+- Staré tiskoviny (47063)
+- Staré tisky 1800–1900 (49462)
+- Staré tisky před r. 1800 (49461)
+
+#### 13. Starožitné textilie a dekorace
+- Starožitné textilie (47104)
+- Starožitné vánoční ozdoby (47105)
+
+#### 14. Starožitnosti Orient – exotika
+- Starožitnosti Orient – exotika (47090)
+
+#### 15. Ostatní starožitnosti
+- Ostatní starožitnosti (47107)

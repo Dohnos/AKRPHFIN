@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📷 iAukro</title>
+  
+  <!-- Bulma CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+  />
+
+  <!-- Font Awesome pro ikony -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+  />
+
+  <!-- Vlastní CSS -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Knihovna XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  
+  <!-- Kontejner -->
+  <section class="section">
+    <div class="container">
+
+      <!-- Hlavička -->
+      <header class="has-text-centered mb-5">
+        <h1 class="title is-3 is-spaced">
+          <i class="fa-solid fa-camera-retro"></i> iAUKRO
+        </h1>
+        <!-- Status (hlavní pruh) -->
+        <div
+          id="status"
+          class="notification is-primary is-light is-rounded py-4"
+          style="font-weight: 700; text-transform: uppercase;"
+        >
+          👉 Začni výběrem obchodu
+        </div>
+      </header>
+
+      <!-- Progress bar navrchu -->
+      <div class="progress-container mb-5">
+        <div class="progress-bar-bg">
+          <div id="step-progress-bar" class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-steps">
+          <span class="step-label step-0 active">1️⃣ Obchod</span>
+          <span class="step-label step-1">2️⃣ Fotky</span>
+          <span class="step-label step-2">3️⃣ Detaily</span>
+          <span class="step-label step-3">4️⃣ Dokončení</span>
+        </div>
+      </div>
+
+      <!-- Krok 0: Výběr obchodu -->
+      <div id="shop-selection" class="box is-rounded step mb-5">
+        <p class="title is-5 mb-4">
+          0️⃣ Vyber obchod
+        </p>
+
+        <button
+          id="shop-zvole"
+          class="button is-primary is-fullwidth is-rounded mb-3"
+        >
+          <i class="fa-solid fa-store"></i>
+          <span>Antik Zvole [Z]</span>
+        </button>
+        <button
+          id="shop-mora"
+          class="button is-primary is-fullwidth is-rounded"
+        >
+          <i class="fa-solid fa-store"></i>
+          <span>Antik Mora [M]</span>
+        </button>
+        <button
+  id="shop-zm"
+  class="button is-primary is-fullwidth is-rounded mt-3"
+>
+  <i class="fa-solid fa-store"></i>
+  <span>Antik Společně [ZM]</span>
+</button>
+        
+        <!-- Tlačítka dole: Zpět (není potřeba v prvním kroku) a Dál -->
+        <div class="is-clearfix mt-4">
+          <!-- Zpět je schované, protože v prvním kroku to nedává smysl -->
+          <div class="is-pulled-left" style="visibility: hidden;">
+            <button
+              class="nav-btn prev-btn button is-text"
+              data-step="0"
+            >
+              <i class="fa-solid fa-arrow-left"></i> Zpět
+            </button>
+          </div>
+          <div class="is-pulled-right">
+            <button
+              class="nav-btn next-btn button is-text"
+              data-step="0"
+            >
+              Dál <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Krok 1: Focení -->
+      <div id="photo-section" class="box is-rounded step mb-5 is-hidden">
+        <p class="title is-5 mb-4">
+          1️⃣ Nafoť fotky
+        </p>
+
+        <button
+          id="take-photo-btn"
+          class="button is-success is-fullwidth is-rounded"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-camera"></i>
+          </span>
+          <span>Nafoť fotku</span>
+        </button>
+        <p class="has-text-centered mt-3 mb-0">
+          <small>
+            Nafoceno: 
+            <span id="photo-count">0/3</span> (celkem 3 fotky)
+            <i class="fa-solid fa-images"></i>
+          </small>
+        </p>
+        <input
+          type="file"
+          id="photo-input"
+          accept="image/*"
+          capture="camera"
+          class="is-hidden"
+        />
+        
+        <!-- Tlačítka dole: Zpět a Dál -->
+        <div class="is-clearfix mt-4">
+          <div class="is-pulled-left">
+            <button
+              class="nav-btn prev-btn button is-text"
+              data-step="1"
+            >
+              <i class="fa-solid fa-arrow-left"></i> Zpět
+            </button>
+          </div>
+          <div class="is-pulled-right">
+            <button
+              class="nav-btn next-btn button is-text"
+              data-step="1"
+            >
+              Dál <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Krok 2: Detaily produktu -->
+      <div id="product-details" class="box is-rounded step mb-5 is-hidden">
+        <p class="title is-5 mb-4">
+          2️⃣ Vyplň detaily
+        </p>
+        
+        <!-- Název -->
+        <div class="field mb-4">
+          <label for="product-name" class="label">Název</label>
+          <div class="control has-relative">
+            <input id="product-name" type="text" class="input is-rounded" placeholder="Název produktu" autocomplete="off" />
+            <button type="button" class="clear-input-btn is-small" data-input="product-name" title="Vymazat">&times;</button>
+            <div id="name-history" class="input-history"></div>
+          </div>
+        </div>
+
+        <!-- Cena -->
+        <div class="field mb-4">
+          <label for="product-price" class="label">Cena</label>
+          <div class="control has-relative">
+            <input id="product-price" type="number" class="input is-rounded" placeholder="Cena v Kč" autocomplete="off" />
+            <button type="button" class="clear-input-btn is-small" data-input="product-price" title="Vymazat">&times;</button>
+            <div id="price-history" class="input-history"></div>
+          </div>
+        </div>
+
+        <!-- Umístění -->
+        <div class="field mb-4">
+          <label for="product-location" class="label">Umístění</label>
+          <div class="control has-relative">
+            <input id="product-location" type="text" class="input is-rounded" placeholder="Zadej umístění" autocomplete="off" />
+            <button type="button" class="clear-input-btn is-small" data-input="product-location" title="Vymazat">&times;</button>
+            <div id="location-history" class="input-history"></div>
+          </div>
+        </div>
+
+        <!-- Výběr kategorie -->
+        <div class="field mb-4">
+          <button
+            id="category-btn"
+            class="button is-link is-light is-rounded is-fullwidth"
+          >
+            <span id="category-btn-text">Kategorie</span>
+          </button>
+          <input type="hidden" id="category-id" />
+        </div>
+
+        <!-- Výběr dopravy -->
+        <div class="field mb-4">
+          <label class="label" for="shippingMethod">Doprava</label>
+          <div class="control">
+            <div class="select is-rounded is-fullwidth">
+              <select id="shippingMethod">
+                <option value="2424163" selected>Zásilkovna (ID 2424163)</option>
+                <option value="2426697">DPD (ID 2426697)</option>
+                <option value="2435308">Toptrans (ID 2435308)</option>
+                <option value="2435307">Osobně (ID 2435307)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <progress
+          id="progress-bar"
+          class="progress is-primary is-rounded mb-3 is-hidden"
+          value="0"
+          max="100"
+        >
+          0%
+        </progress>
+
+        <!-- Tlačítko pro přidání produktu -->
+        <button
+          class="button is-success is-fullwidth is-rounded mb-2"
+          onclick="addProduct()"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-check"></i>
+          </span>
+          <span>Přidat produkt</span>
+        </button>
+        <!-- Zde malý text "Dnes přidáno" -->
+        <p
+          id="daily-count"
+          class="is-size-7 has-text-right has-text-grey"
+        >
+          (Dnes přidáno: 0 produktů)
+        </p>
+
+        <!-- Tlačítka dole: Zpět a Dál -->
+        <div class="is-clearfix mt-4">
+          <div class="is-pulled-left">
+            <button
+              class="nav-btn prev-btn button is-text"
+              data-step="2"
+            >
+              <i class="fa-solid fa-arrow-left"></i> Zpět
+            </button>
+          </div>
+          <div class="is-pulled-right">
+            <button
+              class="nav-btn next-btn button is-text"
+              data-step="2"
+            >
+              Dál <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Krok 3: Dokončení -->
+      <div id="finish-section" class="box is-rounded step is-hidden">
+        <p class="title is-5 mb-4">
+          3️⃣ Dokonči
+        </p>
+        
+        <button
+          id="add-another-btn"
+          class="button is-info is-fullwidth is-rounded mb-2"
+          onclick="addAnotherProduct()"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-plus-circle"></i>
+          </span>
+          <span>Přidat další produkt</span>
+        </button>
+        <button
+          id="finish-btn"
+          class="button is-danger is-fullwidth is-rounded mb-2"
+          onclick="finish()"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-paper-plane"></i>
+          </span>
+          <span>Odeslat přes WhatsApp</span>
+        </button>
+        <button
+          id="reset-btn"
+          class="button is-rounded is-fullwidth"
+          style="background: #777; color: #fff;"
+          onclick="resetStorage()"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-trash"></i>
+          </span>
+          <span>Obnovit data</span>
+        </button>
+        <div
+          id="saved-products"
+          class="content mt-3 has-text-grey has-text-left is-size-7"
+        >
+          <!-- Zde se zobrazí info o exportu -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Modál pro potvrzení ANO/NE -->
+  <div id="confirm-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box is-rounded has-text-centered">
+        <p class="is-size-5 mb-4">Opravdu?</p>
+        <div class="buttons is-justify-content-center">
+          <button id="confirm-yes" class="button is-success is-rounded">
+            ANO
+          </button>
+          <button id="confirm-no" class="button is-danger is-rounded">
+            NE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modál pro opuštění stránky -->
+  <div id="exit-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box is-rounded has-text-centered">
+        <p class="is-size-5 mb-3">
+          Vymazal jsi data, když jsi skončil?
+        </p>
+        <p class="mb-4 has-text-grey">
+          Pokud ne, můžeš to udělat teď.
+        </p>
+        <button
+          id="delete-data-btn"
+          class="button is-danger is-fullwidth is-rounded mb-3"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-trash-can"></i>
+          </span>
+          <span>Vymazat data</span>
+        </button>
+        <button
+          id="close-modal-btn"
+          class="button is-fullwidth is-rounded"
+        >
+          <span class="icon">
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+          <span>Pokračovat bez mazání</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modál pro výběr kategorie -->
+  <div id="category-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box is-rounded">
+        <p class="is-size-5 has-text-weight-semibold mb-4">
+          Vyber kategorii
+        </p>
+        <div class="field mb-3">
+          <div class="control">
+            <input
+              id="category-search"
+              type="text"
+              class="input is-rounded"
+              placeholder="🔍 Hledej kategorii"
+            />
+          </div>
+        </div>
+        <div
+          id="category-list"
+          class="list"
+          style="max-height: 250px; overflow-y: auto;"
+        >
+          <!-- Dynamický seznam kategorií -->
+        </div>
+        <button
+          id="category-close-btn"
+          class="button is-fullwidth is-rounded mt-4"
+        >
+          Zavřít
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vlastní JS -->
+  <script src="script.js"></script>
+</body>
+</html>
