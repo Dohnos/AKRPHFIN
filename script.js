@@ -105,34 +105,41 @@ function ensurePortrait(file) {
       const img = new Image();
       img.src = e.target.result;
       img.onload = () => {
-        if (img.width > img.height) {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          canvas.width = img.height;
-          canvas.height = img.width;
-
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        let targetWidth = img.width;
+        let targetHeight = img.height;
+        
+        if (targetWidth > targetHeight) {
+          // Obrázek je na šířku -> otočíme o 90° na výšku
+          canvas.width = targetHeight;
+          canvas.height = targetWidth;
           ctx.translate(canvas.width / 2, canvas.height / 2);
           ctx.rotate(90 * Math.PI / 180);
-          ctx.drawImage(img, -img.width / 2, -img.height / 2);
-
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const rotatedFile = new File([blob], file.name, {
-                  type: file.type || "image/jpeg",
-                  lastModified: Date.now()
-                });
-                resolve(rotatedFile);
-              } else {
-                resolve(file);
-              }
-            },
-            file.type || "image/jpeg",
-            0.95
-          );
+          ctx.drawImage(img, -targetWidth / 2, -targetHeight / 2);
         } else {
-          resolve(file);
+          // Obrázek je na výšku -> překreslíme 1:1, abychom vypálili orientaci do pixelů
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
         }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const rotatedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now()
+              });
+              resolve(rotatedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          "image/jpeg",
+          0.98 // Velmi vysoká kvalita pro zachování kvality na Cloudinary
+        );
       };
       img.onerror = () => resolve(file);
     };
