@@ -93,6 +93,53 @@ function updateStatus(message) {
   updateDailyCountDisplay();
 }
 
+function ensurePortrait(file) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith("image/")) {
+      resolve(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        if (img.width > img.height) {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = img.height;
+          canvas.height = img.width;
+
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(90 * Math.PI / 180);
+          ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const rotatedFile = new File([blob], file.name, {
+                  type: file.type || "image/jpeg",
+                  lastModified: Date.now()
+                });
+                resolve(rotatedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            file.type || "image/jpeg",
+            0.95
+          );
+        } else {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+}
+
 // Vrátí YYYY-MM-DD
 function getTodayDateString() {
   const now = new Date();
@@ -189,7 +236,9 @@ photoInput.addEventListener("change", async () => {
     // Projdeme všechny vybrané soubory (u mobilu často jen 1)
     for (let i = 0; i < photoInput.files.length; i++) {
       const originalFile = photoInput.files[i];
-      photos.push(originalFile);
+      updateStatus(`⏳ Zpracovávám orientaci fotky č. ${photos.length + 1}...`);
+      const processedFile = await ensurePortrait(originalFile);
+      photos.push(processedFile);
       updateStatus(`📸 Načtena fotka č. ${photos.length}.`);
     }
 
@@ -418,6 +467,9 @@ async function addProduct() {
       bestOffer: 1,
       onlyVerifiedBuyersEnabledOverride: 0,
       attributes: JSON.stringify(),
+      priorityListing: document.getElementById("promo-priority").checked,
+      boldTitle: document.getElementById("promo-bold").checked,
+      highlight: document.getElementById("promo-highlight").checked,
       dateAdded: todayStr
     };
 
@@ -434,6 +486,9 @@ async function addProduct() {
     categoryIdInput.value = "";
     categoryBtnText.innerHTML = 'Vybrat kategorii';
     shippingMethodSelect.value = "2424163";
+    document.getElementById("promo-priority").checked = false;
+    document.getElementById("promo-bold").checked = false;
+    document.getElementById("promo-highlight").checked = false;
 
     productDetailsSection.classList.add("is-hidden");
     finishSection.classList.remove("is-hidden");
@@ -462,6 +517,9 @@ function addAnotherProduct() {
   categoryIdInput.value = "";
   categoryBtnText.innerHTML = 'Vybrat kategorii';
   shippingMethodSelect.value = "2424163";
+  document.getElementById("promo-priority").checked = false;
+  document.getElementById("promo-bold").checked = false;
+  document.getElementById("promo-highlight").checked = false;
   takePhotoBtn.disabled = false;
 
   // Reset historie pro nový produkt
@@ -515,7 +573,10 @@ async function finish() {
     "images",
     "bestOffer",
     "onlyVerifiedBuyersEnabledOverride",
-    "attributes"
+    "attributes",
+    "priorityListing",
+    "boldTitle",
+    "highlight"
   ];
 
   const data = products.map((p) => ({
@@ -540,7 +601,10 @@ async function finish() {
     images: p.images,
     bestOffer: p.bestOffer,
     onlyVerifiedBuyersEnabledOverride: p.onlyVerifiedBuyersEnabledOverride,
-    attributes: p.attributes
+    attributes: p.attributes,
+    priorityListing: p.priorityListing ?? false,
+    boldTitle: p.boldTitle ?? false,
+    highlight: p.highlight ?? false
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
@@ -644,6 +708,9 @@ async function resetStorage() {
   categoryIdInput.value = "";
   categoryBtnText.innerHTML = 'Vybrat kategorii';
   shippingMethodSelect.value = "2424163";
+  document.getElementById("promo-priority").checked = false;
+  document.getElementById("promo-bold").checked = false;
+  document.getElementById("promo-highlight").checked = false;
   progressBar.value = 0;
   progressBar.classList.add("is-hidden");
 

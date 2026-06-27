@@ -17,6 +17,11 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
   />
 
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- Vlastní CSS -->
   <link rel="stylesheet" href="styles.css" />
 
@@ -217,6 +222,48 @@
                 <option value="2435307">Osobně (ID 2435307)</option>
               </select>
             </div>
+          </div>
+        </div>
+
+        <!-- Propagace -->
+        <div class="field mb-5">
+          <label class="label">Propagace (Volitelné)</label>
+          <div class="promo-container">
+            <label class="promo-card" for="promo-priority">
+              <input type="checkbox" id="promo-priority" />
+              <span class="promo-card-custom-box"></span>
+              <div class="promo-card-content">
+                <div class="promo-title">
+                  <i class="fa-solid fa-star text-warning"></i>
+                  <span>Přednostní výpis</span>
+                </div>
+                <div class="promo-desc">priorityListing</div>
+              </div>
+            </label>
+
+            <label class="promo-card" for="promo-bold">
+              <input type="checkbox" id="promo-bold" />
+              <span class="promo-card-custom-box"></span>
+              <div class="promo-card-content">
+                <div class="promo-title">
+                  <i class="fa-solid fa-bold text-info"></i>
+                  <span>Tučný titulek</span>
+                </div>
+                <div class="promo-desc">boldTitle</div>
+              </div>
+            </label>
+
+            <label class="promo-card" for="promo-highlight">
+              <input type="checkbox" id="promo-highlight" />
+              <span class="promo-card-custom-box"></span>
+              <div class="promo-card-content">
+                <div class="promo-title">
+                  <i class="fa-solid fa-highlighter text-success"></i>
+                  <span>Zvýraznění</span>
+                </div>
+                <div class="promo-desc">highlight</div>
+              </div>
+            </label>
           </div>
         </div>
 

@@ -1,220 +1,509 @@
-/* Obecné základní styly */
+/* ==========================================================================
+   iAukro Premium Design System (Modern Dark Theme)
+   ========================================================================== */
 
-/* Skrytí sekcí */
-.is-hidden {
-  display: none !important;
+:root {
+  --bg-color: #0b0f17;
+  --bg-gradient: radial-gradient(circle at top, #161c2a 0%, #0b0f17 100%);
+  --panel-bg: rgba(22, 28, 45, 0.7);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  
+  /* Aukro Yellow / Gold Accent */
+  --accent-color: #ffd21d;
+  --accent-hover: #e0b400;
+  --accent-glow: rgba(255, 210, 29, 0.25);
+  
+  --success-color: #10b981;
+  --info-color: #0ea5e9;
+  --danger-color: #f43f5e;
+  
+  --border-radius-lg: 1.25rem;
+  --border-radius-md: 0.75rem;
+  --border-radius-sm: 0.5rem;
+  
+  --input-bg: #0f1422;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-focus: #ffd21d;
+  
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Zvýraznění boxu při hoveru */
-.step:hover {
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.07);
-  transition: box-shadow 0.2s ease;
-}
-
-/* Přechod pro status text */
-#status {
-  transition: all 0.3s ease;
-}
-
-/* Nudges pro button hover */
-.button:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease;
-}
-
-/* Seznam kategorií uvnitř modálu */
-#category-list button {
-  border: none;
-  background: none;
-  text-align: left;
-  width: 100%;
-  padding: 0.75rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-#category-list button:hover {
-  background-color: #f2f2f2;
-}
-
-/* Progres bar (Bulma style je nativní, tady jen drobné úpravy) */
-.progress {
-  margin-top: 0.5rem;
-  transition: width 0.3s ease;
-}
-
+/* Base Styles & Typography */
 body {
-  background: #f8f9fa;
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  font-size: 1.15rem;
-  color: #222;
+  background: var(--bg-color);
+  background-image: var(--bg-gradient);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  color: var(--text-primary);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section {
+  padding: 1.5rem 1rem;
+  width: 100%;
 }
 
 .container {
-  max-width: 540px;
+  max-width: 500px;
   margin: 0 auto;
-  background: #fff;
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
-  padding: 2.5rem 2rem 2rem 2rem;
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: 2rem 1.75rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.title, .label {
-  font-weight: 700;
-  letter-spacing: 0.01em;
+/* Glass panel glow effects */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
 }
 
-input.input, select, .button {
-  font-size: 1.1rem;
-  border-radius: 1.5rem;
-  padding: 1.1em 1.2em;
+/* Headings & Status */
+.title {
+  color: var(--text-primary) !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.title i {
+  color: var(--accent-color);
+  margin-right: 0.5rem;
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
-input.input {
-  padding-right: 2.5em; /* Větší padding pro křížek */
-}
-
-.button {
+#status {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--panel-border);
+  color: var(--text-primary) !important;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: var(--border-radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  font-size: 0.95rem;
 }
 
-.box {
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-  background: #fff;
-  padding: 2rem 1.5rem;
-}
-
-/* Minimalistický progress bar */
+/* Stepper Progress Bar */
 .progress-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-md);
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 .progress-bar-bg {
-  background: #e9ecef;
-  border-radius: 1rem;
-  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-sm);
+  height: 6px;
   width: 100%;
   overflow: hidden;
   position: relative;
 }
 .progress-bar-fill {
-  background: linear-gradient(90deg, #00c3ff 0%, #ffff1c 100%);
+  background: linear-gradient(90deg, var(--accent-color) 0%, #ff9f1c 100%);
   height: 100%;
   width: 0%;
-  border-radius: 1rem;
-  transition: width 0.4s cubic-bezier(.4,2,.6,1);
+  border-radius: var(--border-radius-sm);
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 0 8px rgba(255, 210, 29, 0.5);
 }
 .progress-steps, .step-label { display: none !important; }
 
-/* Input historie a autocomplete */
-.input-history {
-  display: flex;
-  gap: 0.5em;
-  margin-top: 0.2em;
-  font-size: 0.98em;
-  color: #888;
-  min-height: 1.2em;
-  flex-wrap: wrap;
-}
-.input-history .history-item {
-  background: #f2f2f2;
-  border-radius: 1em;
-  padding: 0.15em 0.8em;
-  margin-bottom: 0.1em;
-  cursor: pointer;
-  transition: background 0.15s;
-  border: 1px solid #e0e0e0;
-}
-.input-history .history-item:hover {
-  background: #e0f7fa;
-  color: #111;
+/* Box element for Steps */
+.box {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
 }
 
-/* Křížek pro vymazání inputu */
-.has-relative { position: relative; }
+.box .title.is-5 {
+  font-size: 1.2rem;
+  margin-bottom: 1.25rem !important;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+
+/* Custom Buttons */
+.button {
+  font-weight: 700;
+  border-radius: var(--border-radius-md) !important;
+  transition: var(--transition-smooth) !important;
+  border: 1px solid transparent !important;
+  padding: 0.8rem 1.5rem !important;
+  height: auto !important;
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+.button:active {
+  transform: translateY(0);
+}
+
+.button.is-primary {
+  background-color: var(--accent-color) !important;
+  color: #0b0f17 !important;
+}
+.button.is-primary:hover {
+  background-color: var(--accent-hover) !important;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.button.is-success {
+  background-color: var(--success-color) !important;
+  color: #fff !important;
+}
+.button.is-success:hover {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.button.is-info {
+  background-color: var(--info-color) !important;
+  color: #fff !important;
+}
+.button.is-info:hover {
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+}
+
+.button.is-danger {
+  background-color: var(--danger-color) !important;
+  color: #fff !important;
+}
+.button.is-danger:hover {
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+.button.is-text {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  text-decoration: none !important;
+}
+.button.is-text:hover {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Fields & Custom Inputs */
+.label {
+  color: var(--text-secondary) !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem !important;
+}
+
+input.input {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-md) !important;
+  padding: 0.75rem 1rem !important;
+  height: auto !important;
+  transition: var(--transition-smooth);
+}
+input.input::placeholder {
+  color: #475569 !important;
+}
+input.input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+
+.select, select {
+  width: 100%;
+}
+select {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-md) !important;
+  padding: 0.75rem 1rem !important;
+  height: auto !important;
+  transition: var(--transition-smooth);
+}
+.select::after {
+  border-color: var(--accent-color) !important;
+}
+
+/* Input clear button */
+.has-relative {
+  position: relative;
+}
 .clear-input-btn {
   position: absolute;
-  right: 0.7em;
+  right: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #bbb;
-  font-size: 1.3em;
-  line-height: 1;
+  color: #475569;
+  font-size: 1.3rem;
   cursor: pointer;
-  padding: 0 0.2em;
-  z-index: 2;
-  opacity: 0.7;
-  transition: color 0.2s, opacity 0.2s;
+  z-index: 10;
+  transition: color 0.2s;
+  padding: 0;
+  line-height: 1;
 }
 .clear-input-btn:hover {
-  color: #ff7675;
-  opacity: 1;
+  color: var(--danger-color);
 }
 
-.field {
-  margin-bottom: 2rem;
+/* Input autocomplete suggestions */
+.input-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  min-height: 1.5rem;
+}
+.history-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2rem;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.history-item:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
-.input:focus, select:focus {
-  border-color: #00b894;
-  box-shadow: 0 0 0 2px #00b89422;
-}
-
-/* Chybové hlášky pod pole */
+/* Field errors */
 .input-error {
-  border-color: #ff7675 !important;
+  border-color: var(--danger-color) !important;
 }
 .error-message {
-  color: #ff7675;
-  font-size: 1rem;
-  margin-top: 0.3em;
-  margin-bottom: -1.2em;
-  min-height: 1.2em;
+  color: var(--danger-color);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
-/* Kategorie hierarchicky */
-.category-group {
-  font-weight: 600;
-  margin-top: 1.2em;
-  margin-bottom: 0.5em;
-  color: #636e72;
-  font-size: 1.05em;
+/* Category button trigger */
+#category-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--panel-border) !important;
+  color: var(--text-primary) !important;
+}
+#category-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.category-selected {
+  color: var(--success-color);
+  font-weight: 700;
 }
 
-#category-list button {
-  border-radius: 1.2em;
-  margin-bottom: 0.2em;
-  background: #f7f7fa;
-  color: #222;
-  font-size: 1.08em;
+/* --------------------------------------------------------------------------
+   Promotion Interactive Check-cards
+   -------------------------------------------------------------------------- */
+.promo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
-#category-list button:hover {
-  background: #e0f7fa;
+
+.promo-card {
+  display: flex !important;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-md);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition-smooth);
+  user-select: none;
+  margin-bottom: 0 !important;
+}
+
+.promo-card:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide native checkbox */
+.promo-card input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Custom checkbox indicator */
+.promo-card-custom-box {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  flex-shrink: 0;
+}
+
+/* Custom checkbox tick */
+.promo-card-custom-box::after {
+  content: "\f00c";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.75rem;
+  color: #0b0f17;
+  display: none;
+}
+
+.promo-card:has(input[type="checkbox"]:checked) {
+  background: rgba(255, 210, 29, 0.06) !important;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 12px rgba(255, 210, 29, 0.15);
+}
+
+.promo-card:has(input[type="checkbox"]:checked) .promo-card-custom-box {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.promo-card:has(input[type="checkbox"]:checked) .promo-card-custom-box::after {
+  display: block;
+}
+
+.promo-card-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.promo-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.promo-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+/* Modals styling */
+.modal-background {
+  background-color: rgba(11, 15, 23, 0.8) !important;
+  backdrop-filter: blur(8px);
 }
 
 .modal-content {
-  border-radius: 1.5rem;
+  max-width: 440px !important;
+  padding: 0 1rem;
 }
 
-/* Jemný overlay pro modal */
-.modal-background {
-  background: rgba(0,0,0,0.18) !important;
+.modal-content .box {
+  background: #161c2a !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 2rem 1.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
 }
 
-.category-selected {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-size: 1.1em;
-  color: #00b894;
-  font-weight: 600;
-  margin-top: 0.2em;
+.modal-content .title.is-5 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem !important;
 }
-.category-selected .fa-check {
-  color: #00b894;
-  font-size: 1.2em;
+
+/* Category modal search suggestions list */
+#category-list {
+  background: #0f1422;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--panel-border);
+  padding: 0.5rem;
+}
+.category-group {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  padding: 0.5rem 0.75rem 0.25rem 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+#category-list button {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-sm) !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.9rem !important;
+  text-align: left;
+  border: none;
+  width: 100%;
+}
+#category-list button:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Location history items */
+#location-history {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+}
+#location-history span {
+  color: var(--accent-color) !important;
+  text-decoration: underline;
+}
+
+/* Utility classes and others */
+.is-hidden {
+  display: none !important;
+}
+
+.is-clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.is-pulled-left {
+  float: left;
+}
+
+.is-pulled-right {
+  float: right;
+}
+
+/* Daily count label */
+#daily-count {
+  margin-top: 0.5rem;
+  color: var(--text-secondary) !important;
 }
