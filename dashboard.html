@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📊 iAUKRO – Dashboard</title>
+
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vlastní styly -->
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+
+  <!-- Přepínač světlý/tmavý režim (nastaví motiv co nejdřív) -->
+  <script src="theme.js"></script>
+
+  <!-- Knihovna XLSX (export Excelu) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Supabase klient -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+
+      <!-- Hlavička -->
+      <header class="dash-header mb-5">
+        <h1 class="title is-3">
+          <i class="fa-solid fa-database"></i> iAUKRO Dashboard
+        </h1>
+        <div class="dash-actions">
+          <a href="index.html" class="button is-primary is-rounded">
+            <i class="fa-solid fa-camera-retro"></i>&nbsp; Přidat produkty
+          </a>
+          <button id="export-btn" class="button is-success is-rounded">
+            <i class="fa-solid fa-file-excel"></i>&nbsp; Export Excel (bez prodaných)
+          </button>
+          <button id="refresh-btn" class="button is-light is-rounded">
+            <i class="fa-solid fa-rotate"></i>&nbsp; Obnovit
+          </button>
+        </div>
+      </header>
+
+      <!-- Statistiky -->
+      <div class="dash-stats mb-5">
+        <div class="stat-card">
+          <span class="stat-num" id="stat-total">–</span>
+          <span class="stat-label">📦 Produktů celkem</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="stat-today">–</span>
+          <span class="stat-label">🆕 Přidáno dnes</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="stat-sold">–</span>
+          <span class="stat-label">✅ Prodáno</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="stat-last">–</span>
+          <span class="stat-label">🔖 Poslední ID</span>
+        </div>
+      </div>
+
+      <!-- Hledání + filtr -->
+      <div class="dash-toolbar mb-4">
+        <div class="control has-icons-left is-flex-grow-1">
+          <input id="search" class="input is-rounded" type="text" placeholder="Hledej podle ID nebo názvu…" />
+          <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <label class="checkbox dash-hide-sold">
+          <input type="checkbox" id="hide-sold" /> Skrýt prodané
+        </label>
+      </div>
+
+      <!-- Stavová hláška -->
+      <div id="status-msg" class="notification is-light is-rounded is-hidden"></div>
+
+      <!-- Seznam produktů -->
+      <div id="products-container" class="dash-grid"></div>
+
+    </div>
+  </section>
+
+  <!-- Modál náhledu fotek -->
+  <div id="photo-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div id="photo-modal-body" class="dash-photo-modal"></div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -8,15 +8,21 @@ const CLOUDINARY_UPLOAD_PRESET = "AKR_Preset";
    Proměnné
 -----------------------------------*/
 let photos = [];
-let selectedShop = null; // [Z] nebo [M]
 let categories = [];
+
+/* ---------------------------------
+   ID produktu (nahrazuje výběr obchodu)
+-----------------------------------*/
+let currentProductId = null; // aktuální ID, např. "RA01"
+let productIdPrefix = "";     // písmenná část, např. "RA"
+let productIdNum = 0;         // číselná část, např. 1
+let productIdWidth = 2;       // šířka číselné části pro doplnění nul
 
 /* ---------------------------------
    DOM prvky
 -----------------------------------*/
-const shopZvoleBtn = document.getElementById("shop-zvole");
-const shopMoraBtn = document.getElementById("shop-mora");
-const shopZmBtn = document.getElementById("shop-zm");
+const startProductIdInput = document.getElementById("start-product-id");
+const lastIdDisplay = document.getElementById("last-id-display");
 const photoInput = document.getElementById("photo-input");
 const takePhotoBtn = document.getElementById("take-photo-btn");
 const photoCountElem = document.getElementById("photo-count");
@@ -489,36 +495,116 @@ function closeModal(modalElem) {
 /* ---------------------------------
    Inicializace
 -----------------------------------*/
-updateStatus("👉 Začni výběrem obchodu");
+updateStatus("👉 Začni zadáním ID produktu");
 updateDailyCountDisplay();
 updateStepProgressBar(0);
 
 /* ---------------------------------
-   Výběr obchodu
+   ID produktu (výběr počátečního ID)
 -----------------------------------*/
-shopZvoleBtn.addEventListener("click", () => {
-  selectedShop = "Z"; // obch. param
-  shopSelectionSection.classList.add("is-hidden");
-  photoSectionSection.classList.remove("is-hidden");
-  updateStatus("👉 Vybral jsi Antik Zvole. Nahoď první fotku!");
-  updateStepProgressBar(1);
-});
+// Rozparsuje "RA01" -> { prefix:"RA", num:1, width:2 }
+function parseProductId(raw) {
+  const s = String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
+  const m = s.match(/^([A-Z]+)(\d+)$/);
+  if (!m) return null;
+  return { prefix: m[1], num: parseInt(m[2], 10), width: m[2].length };
+}
 
-shopMoraBtn.addEventListener("click", () => {
-  selectedShop = "M"; // obch. param
-  shopSelectionSection.classList.add("is-hidden");
-  photoSectionSection.classList.remove("is-hidden");
-  updateStatus("👉 Vybral jsi Antik Mora. Nahoď první fotku!");
-  updateStepProgressBar(1);
-});
+// Složí ID zpět z částí ("RA", 1, 2) -> "RA01"
+function formatProductId(prefix, num, width) {
+  return prefix + String(num).padStart(width, "0");
+}
 
-shopZmBtn.addEventListener("click", () => {
-  selectedShop = "ZM";
-  shopSelectionSection.classList.add("is-hidden");
-  photoSectionSection.classList.remove("is-hidden");
-  updateStatus("👉 Vybral jsi Antik Společně. Nahoď první fotku!");
-  updateStepProgressBar(1);
-});
+// Nastaví aktuální ID a uloží stav do localStorage
+function setProductIdState(prefix, num, width) {
+  productIdPrefix = prefix;
+  productIdNum = num;
+  productIdWidth = Math.max(width, 2);
+  currentProductId = formatProductId(productIdPrefix, productIdNum, productIdWidth);
+  localStorage.setItem(
+    "productIdState",
+    JSON.stringify({ prefix: productIdPrefix, num: productIdNum, width: productIdWidth })
+  );
+}
+
+// Posun na další ID v pořadí (po přidání produktu)
+function advanceProductId() {
+  setProductIdState(productIdPrefix, productIdNum + 1, productIdWidth);
+}
+
+// Načte poslední použité ID z databáze (Supabase) a předvyplní další
+async function loadLastProductId() {
+  let lastId = null;
+
+  // 1) primárně z databáze (Supabase) – bereme ID s NEJVYŠŠÍM číslem
+  //    (ne podle času vložení, hromadný import má stejný čas u všech)
+  try {
+    if (window.supabaseClient) {
+      const { data, error } = await window.supabaseClient
+        .from("products")
+        .select("product_id");
+      if (!error && data && data.length) {
+        let bestNum = -1;
+        data.forEach((r) => {
+          const p = parseProductId(r.product_id);
+          if (p && p.num > bestNum) {
+            bestNum = p.num;
+            lastId = r.product_id;
+          }
+        });
+      }
+    }
+  } catch (e) {
+    // Supabase nedostupné – použijeme localStorage
+  }
+
+  // 2) fallback z localStorage
+  if (!lastId) {
+    const saved = JSON.parse(localStorage.getItem("productIdState") || "null");
+    if (saved && saved.prefix) {
+      lastId = formatProductId(saved.prefix, saved.num, saved.width);
+    }
+  }
+
+  if (lastId && lastIdDisplay) {
+    lastIdDisplay.innerHTML = `Poslední: <strong>${lastId}</strong>`;
+    const parsed = parseProductId(lastId);
+    if (parsed && startProductIdInput && !startProductIdInput.value) {
+      // předvyplníme dalším ID v pořadí
+      startProductIdInput.value = formatProductId(parsed.prefix, parsed.num + 1, parsed.width);
+    }
+  } else if (lastIdDisplay) {
+    lastIdDisplay.innerHTML = "Zatím žádné ID v databázi. Začni např. <strong>RA01</strong>.";
+  }
+}
+
+// Ověří, že počáteční ID je volné – tj. je vyšší než nejvyšší už použité
+// ID se stejným prefixem. Tím zajistíme, že se ID nikdy nepoužije podruhé.
+async function checkStartIdFree(parsed) {
+  if (!window.supabaseClient) return { ok: true };
+  try {
+    const { data, error } = await window.supabaseClient
+      .from("products")
+      .select("product_id")
+      .ilike("product_id", parsed.prefix + "%");
+    if (error) return { ok: true }; // při chybě sítě neblokujeme
+
+    let maxNum = 0;
+    (data || []).forEach((r) => {
+      const m = parseProductId(r.product_id);
+      if (m && m.prefix === parsed.prefix && m.num > maxNum) maxNum = m.num;
+    });
+
+    if (parsed.num <= maxNum) {
+      return { ok: false, suggest: formatProductId(parsed.prefix, maxNum + 1, parsed.width) };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: true };
+  }
+}
+
+loadLastProductId();
 
 /* ---------------------------------
    Focení 3 fotek
@@ -652,8 +738,8 @@ async function uploadFile(file, indexForImages = 1) {
 
   } else {
     formData.append("folder", "excel_files");
-    // Např.: products_25032025_[Z]_ABCD
-    const publicId = `products_${dateStr}_[${selectedShop}]_${randomSuffix}`;
+    // Např.: products_25032025_RA_ABCD
+    const publicId = `products_${dateStr}_${productIdPrefix}_${randomSuffix}`;
     formData.append("public_id", publicId);
   }
 
@@ -742,16 +828,17 @@ async function addProduct() {
       return d.toISOString().replace(".000Z", "Z");
     }
 
-    const productDescription = `<div class="aukro-offer-default"><div data-layout="text"><div><h3><strong>🛒 NABÍZENÉ ZBOŽÍ 🎁</strong></h3><p>Stav viz. fotografie 📸</p><p><strong> Pro dotazy k aukcím preferuji komunikaci e-mailem, z důvodu flexibilnějšího a rychlejšího vyřízení požadavku. Přeji Vám příjemnou dražbu! 💌 Podívejte se i na mé další aukce a objevte skvělé nabídky! 🚀</strong></p><p><br></p><h3><strong>⚠️ INFORMACE O AUKCI :</strong></h3><p>Na platby čekám jeden týden od vydražení aukce, zboží <strong>zasílám 7-10 dní po obdržení platby</strong>. Zboží bude znovu vystaveno, zda-li nebude uhrazeno v této lhůtě.</p><p>Berte prosím na vědomí, že vydražené zboží <strong>nezasílám na DOBÍRKU</strong>. Zboží mohu zasílat přes <strong>KURÝRNÍ SLUŽBU (DPD) & také ZÁSILKOVNU</strong>.</p><p><br></p><h3><strong>💳 PLATBA :</strong></h3><p>Platbu můžete uskutečnit pouze <strong>BANKOVNÍM PŘEVODEM</strong>. Číslo bankovního účtu <strong>najdete ve výherním e-mailu</strong>. Děkuji za pochopení. <strong>(Při platbě BANKOVNÍM PŘEVODEM, prosím uvést ČÍSLO NABÍDKY, které je uvedeno u AUKCE)</strong></p><p><a href="https://aukro.cz/uzivatel/ZvoleAnt/nabidky"><img src="https://i.postimg.cc/nMbG3ZG9/A.png" alt="Nabízené zboží" style="display:block; margin:auto;"></a></p></div></div></div>`;
+    const productDescription = `<div class="aukro-offer-default"><div data-layout="text"><div style="font-family:Helvetica,Arial,sans-serif;color:#111;background:#fff;border:1px solid #111;border-radius:20px;padding:28px;max-width:900px;margin:auto;"><p style="margin:0 0 20px;"><img src="https://cdn-pipeline-output.picsart.com/pipeline-output/31a3a109-ef8f-49d0-b22a-546a6815f9b4.png" alt="RetroAukce" style="display:block;margin:auto;max-width:100%;border-radius:16px;"></p><h3 style="background:#111;color:#fff;border-radius:12px;padding:10px 18px;margin:0 0 10px;font-size:17px;letter-spacing:.5px;"><strong>🛒 NABÍZENÉ ZBOŽÍ</strong></h3><div style="border:1px solid #ddd;border-radius:14px;padding:16px 18px;margin:0 0 12px;"><p style="margin:0 0 8px;">Stav viz. fotografie 📸</p><p style="margin:0;"><strong>Pro dotazy k aukcím preferuji komunikaci e-mailem, z důvodu flexibilnějšího a rychlejšího vyřízení požadavku. Přeji Vám příjemnou dražbu! 💌 Podívejte se i na mé další aukce a objevte skvělé nabídky! 🚀</strong></p></div><h3 style="background:#111;color:#fff;border-radius:12px;padding:10px 18px;margin:22px 0 10px;font-size:17px;letter-spacing:.5px;"><strong>⚠️ INFORMACE O AUKCI</strong></h3><div style="border:1px solid #ddd;border-radius:14px;padding:16px 18px;margin:0 0 12px;"><p style="margin:0 0 8px;">Na platby čekám jeden týden od vydražení aukce, zboží <strong>zasílám 7–10 dní po obdržení platby</strong>. Zboží bude znovu vystaveno, zda-li nebude uhrazeno v této lhůtě.</p><p style="margin:0;">Berte prosím na vědomí, že vydražené zboží <strong>nezasílám na DOBÍRKU</strong>. Zboží mohu zasílat přes <strong>KURÝRNÍ SLUŽBU (DPD) &amp; také ZÁSILKOVNU & BALÍKOVNU</strong>.</p></div><h3 style="background:#111;color:#fff;border-radius:12px;padding:10px 18px;margin:22px 0 10px;font-size:17px;letter-spacing:.5px;"><strong>💳 PLATBA</strong></h3><div style="border:1px solid #ddd;border-radius:14px;padding:16px 18px;margin:0 0 12px;"><p style="margin:0;">Platbu můžete uskutečnit pouze přes <strong>AUKRO</strong>. Děkuji za pochopení. <strong></strong></p></div><p style="margin:28px 0 0;text-align:center;"><a href="https://aukro.cz/uzivatel/RetroAukce/nabidky" style="display:block;width:fit-content;margin:0 auto;background:#111;color:#fff;text-decoration:none;border-radius:999px;padding:14px 32px;font-weight:bold;letter-spacing:.5px;">➜ ZOBRAZIT NABÍDKY</a></p></div></div></div>`;
 
-    const formattedName = `${name.toUpperCase()} | [${selectedShop}]`;
+    const productId = currentProductId;
+    const formattedName = `${name.toUpperCase()} | ${productId}`;
     const todayStr = getTodayDateString();
 
     const product = {
       entityId: lastEntityId,
       name: formattedName,
       language: "cs-CZ",
-      extId: location,
+      extId: `${location} | ${productId}`,
       categoryId: parseInt(categoryId),
       description: productDescription,
       auctionPriceAmount: parseInt(price),
@@ -777,12 +864,17 @@ async function addProduct() {
       priorityListing: document.getElementById("promo-priority").checked,
       boldTitle: document.getElementById("promo-bold").checked,
       highlight: document.getElementById("promo-highlight").checked,
-      dateAdded: todayStr
+      dateAdded: todayStr,
+      productId: productId,
+      locationName: location
     };
 
     let products = JSON.parse(localStorage.getItem("products")) || [];
     products.push(product);
     localStorage.setItem("products", JSON.stringify(products));
+
+    // Posuneme ID produktu na další v pořadí
+    advanceProductId();
 
     // Reset fotek a formuláře
     photos = [];
@@ -933,8 +1025,8 @@ async function finish() {
     const dd = String(dateNow.getDate()).padStart(2, "0");
     const mm = String(dateNow.getMonth() + 1).padStart(2, "0");
     const yyyy = String(dateNow.getFullYear());
-    const dateStr = dd + mm + yyyy; 
-    const fileName = `products_${dateStr}_[${selectedShop}].xlsx`;
+    const dateStr = dd + mm + yyyy;
+    const fileName = `products_${dateStr}_${productIdPrefix}.xlsx`;
 
     const file = new File([blob], fileName, {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -943,6 +1035,9 @@ async function finish() {
     // Pro Excel: doplníme i unikátní sufix do public_id
     const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     const excelUrl = await uploadFileForExcel(file, randomSuffix);
+
+    // Po vygenerování Excelu naimportujeme produkty i do dashboardu (Supabase)
+    await syncProductsToSupabase(products, excelUrl);
 
     // Zkopírování odkazu do schránky
     navigator.clipboard.writeText(excelUrl).then(
@@ -980,8 +1075,8 @@ async function uploadFileForExcel(file, randomSuffix) {
   const yyyy = String(now.getFullYear());
   const dateStr = dd + mm + yyyy; 
 
-  // Např. products_26032025_[Z]_ABCD
-  const publicId = `products_${dateStr}_[${selectedShop}]_${randomSuffix}`;
+  // Např. products_26032025_RA_ABCD
+  const publicId = `products_${dateStr}_${productIdPrefix}_${randomSuffix}`;
 
   formData.append("folder", "excel_files");
   formData.append("public_id", publicId);
@@ -999,6 +1094,69 @@ async function uploadFileForExcel(file, randomSuffix) {
 }
 
 /* ---------------------------------
+   Import produktů do dashboardu (Supabase)
+   – zavolá se v finish() po vytvoření Excelu.
+   Když Supabase není nastaven, tiše se přeskočí
+   a appka dál funguje jen s Excelem.
+-----------------------------------*/
+async function syncProductsToSupabase(products, excelUrl) {
+  if (!window.supabaseClient) {
+    updateStatus("ℹ️ Supabase není nastaven – import do dashboardu přeskočen.");
+    return;
+  }
+
+  // Importujeme jen produkty, které ještě v databázi nejsou (kvůli
+  // opakovanému "Odeslat" nechceme duplicity). ID jsou navíc unikátní
+  // na úrovni databáze, takže se nedají použít podruhé.
+  const pending = products.filter((p) => !p.syncedToDb);
+  if (!pending.length) return;
+
+  try {
+    updateStatus("🗄️ Importuji produkty do dashboardu...");
+    const rows = pending.map((p) => ({
+      product_id: p.productId || null,
+      name: p.name,
+      price: p.auctionPriceAmount,
+      location: p.locationName || null,
+      ext_id: p.extId,
+      category_id: p.categoryId,
+      shipping_template_id: p.shippingTemplateId,
+      images: p.images,
+      image_list: p.images ? p.images.split(" ").filter(Boolean) : [],
+      priority_listing: !!p.priorityListing,
+      bold_title: !!p.boldTitle,
+      highlight: !!p.highlight,
+      description: p.description,
+      excel_url: excelUrl || null,
+      sold: false,
+      raw: p, // celý produkt pro pozdější re-export ve formátu pro Aukro
+      date_added: p.dateAdded
+    }));
+
+    // insert (ne upsert) => existující ID nikdy nepřepíšeme
+    const { error } = await window.supabaseClient.from("products").insert(rows);
+    if (error) throw error;
+
+    // Označíme produkty jako zapsané, ať je při dalším "Odeslat" neduplikujeme
+    const all = JSON.parse(localStorage.getItem("products")) || [];
+    const doneIds = new Set(pending.map((p) => p.productId));
+    all.forEach((p) => {
+      if (doneIds.has(p.productId)) p.syncedToDb = true;
+    });
+    localStorage.setItem("products", JSON.stringify(all));
+
+    updateStatus("✅ Produkty naimportovány do dashboardu.");
+  } catch (e) {
+    const msg = (e && e.message) || e;
+    if (String(msg).toLowerCase().includes("duplicate")) {
+      updateStatus("⛔ Některé ID už v databázi existuje – produkty se ZNOVU nepoužijí.");
+    } else {
+      updateStatus("⚠️ Import do dashboardu selhal: " + msg);
+    }
+  }
+}
+
+/* ---------------------------------
    Reset úložiště
 -----------------------------------*/
 async function resetStorage() {
@@ -1007,7 +1165,11 @@ async function resetStorage() {
 
   localStorage.clear();
   photos = [];
-  selectedShop = null;
+  currentProductId = null;
+  productIdPrefix = "";
+  productIdNum = 0;
+  productIdWidth = 2;
+  if (startProductIdInput) startProductIdInput.value = "";
   photoCountElem.textContent = "0/3";
   document.getElementById("product-name").value = "";
   document.getElementById("product-price").value = "";
@@ -1030,6 +1192,7 @@ async function resetStorage() {
   updateStepProgressBar(0);
 
   updateStatus("🧹 Data byla vymazána! Začni znovu.");
+  loadLastProductId();
 }
 
 /* ---------------------------------
@@ -1043,12 +1206,29 @@ const steps = [
 ];
 
 document.querySelectorAll(".nav-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     const currentStep = parseInt(btn.dataset.step, 10);
     const isNext = btn.classList.contains("next-btn");
     const newStep = isNext ? currentStep + 1 : currentStep - 1;
 
     if (newStep >= 0 && newStep < steps.length) {
+      // Krok 0 -> nastavení ID produktu (+ kontrola unikátnosti)
+      if (currentStep === 0 && isNext) {
+        const parsed = parseProductId(startProductIdInput.value);
+        if (!parsed) {
+          updateStatus("⚠️ Zadej platné ID produktu, např. RA01");
+          return;
+        }
+        const check = await checkStartIdFree(parsed);
+        if (!check.ok) {
+          startProductIdInput.value = check.suggest;
+          updateStatus(
+            `⛔ ID ${formatProductId(parsed.prefix, parsed.num, parsed.width)} už bylo použité. Zkus ${check.suggest}.`
+          );
+          return;
+        }
+        setProductIdState(parsed.prefix, parsed.num, parsed.width);
+      }
       // Kontrola 3 fotek při přechodu z kroku 1
       if (currentStep === 1 && isNext && photos.length < 3) {
         updateStatus("⚠️ Musíš nafotit 3 fotky, než přejdeš dál!");

@@ -1,0 +1,196 @@
+/* ---------------------------------
+   iAUKRO Dashboard – styly
+   Barvy jedou přes proměnné ze styles.css,
+   takže se automaticky mění se světlým/tmavým režimem.
+-----------------------------------*/
+
+.dash-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-header .title {
+  margin-bottom: 0;
+}
+.dash-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Statistiky */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.stat-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Toolbar (hledání + filtr) */
+.dash-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.dash-hide-sold {
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Mřížka produktů */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.prod-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--panel-shadow);
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.prod-card:hover {
+  transform: translateY(-3px);
+}
+.prod-card.is-sold {
+  opacity: 0.72;
+}
+.prod-card.is-sold .prod-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.prod-thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--input-bg) center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 2rem;
+}
+.prod-thumb.is-clickable {
+  cursor: zoom-in;
+}
+.prod-thumb-count {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  z-index: 1;
+}
+
+/* Odznak PRODÁNO */
+.sold-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--danger-color);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  z-index: 2;
+}
+
+.prod-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prod-id {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent-color);
+  color: #0b0f17;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.prod-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+.prod-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.prod-date {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+.sold-toggle {
+  margin-top: 6px;
+  width: 100%;
+  border-radius: var(--border-radius-md) !important;
+  font-weight: 700 !important;
+}
+
+/* Modál fotek */
+.dash-photo-modal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+.dash-photo-modal img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+/* Responzivita */
+@media (max-width: 600px) {
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
