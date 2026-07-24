@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// ==========================================================
+// iAUKRO – Firestore bezpečnostní pravidla
+//
+// Přístup k datům má POUZE vlastník přihlášený přes Firebase Auth
+// s e-mailem uvedeným níže. Ten má plná práva (čtení, zápis, mazání).
+// Kdokoli jiný (nepřihlášený i přihlášený pod jiným účtem) je odmítnut –
+// nikdo cizí tedy nemůže data číst, měnit ani smazat.
+//
+// ⚠️ E-mail musí PŘESNĚ (malými písmeny) sedět s window.OWNER_EMAIL
+//    v souboru firebase-config.js. Účet vytvoř ve Firebase Console
+//    → Authentication → Users s e-mailem: retroaukce@email.com
+// ==========================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.email == 'retroaukce@email.com';
+    }
+
+    // Produkty – jen vlastník má plná práva.
+    match /products/{productId} {
+      allow read, write: if isOwner();
+    }
+
+    // Vše ostatní je zakázáno.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

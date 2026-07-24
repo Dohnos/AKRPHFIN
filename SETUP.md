@@ -1,123 +1,105 @@
-# 🚀 iAUKRO – návod: Supabase + Vercel
+# 🚀 iAUKRO – návod: Firebase + Vercel
 
 Aplikace má dvě části, které sdílí jednu databázi:
 - **`index.html`** 📷 – appka na focení a přípravu produktů (generuje Excel + importuje do databáze)
 - **`dashboard.html`** 📊 – přehled všech produktů (ID, název, datum, fotky)
 
-Databáze = **Supabase**, hosting = **Vercel**. Postup zabere ~15 minut. 🙂
+Databáze = **Cloud Firestore** (Firebase), přihlášení = **Firebase Auth**, hosting = **Vercel**.
+Přístup k datům má **jen vlastník** – nikdo cizí data nepřečte, nezmění ani nesmaže. 🔒
 
 ---
 
-## 1️⃣ Založ projekt v Supabase
-1. Jdi na [supabase.com](https://supabase.com) → **Sign in** (přes GitHub je to nejrychlejší).
-2. Klikni **New project** ➕
-3. Vyplň:
-   - **Name:** `iaukro`
-   - **Database Password:** vygeneruj silné heslo a ulož si ho 🔐
-   - **Region:** `Central EU (Frankfurt)` 🇪🇺
-4. **Create new project** a počkej ~1 minutu, než se rozjede. ⏳
+## 1️⃣ Firebase projekt
+1. Jdi na [console.firebase.google.com](https://console.firebase.google.com) → přihlas se Google účtem.
+2. **Add project** ➕ → název `iaukro` → Google Analytics můžeš vypnout → **Create project**.
 
-## 2️⃣ Vytvoř tabulku produktů
-1. V levém menu klikni na **SQL Editor** 🧑‍💻
-2. Vlož tento SQL a klikni **Run** ▶️:
+## 2️⃣ Zapni Firestore
+1. Levé menu **Build → Firestore Database → Create database**.
+2. **Location:** `eur3 (europe-west)` nebo `europe-west3` 🇪🇺 (nejde později změnit!).
+3. Režim: **Start in production mode** (pravidla nastavíme v kroku 4).
 
-```sql
-create table if not exists public.products (
-  id                   bigint generated always as identity primary key,
-  product_id           text unique,          -- např. RA01 (unikátní, nejde použít 2×)
-  name                 text,
-  price                integer,
-  location             text,
-  ext_id               text,
-  category_id          integer,
-  shipping_template_id integer,
-  images               text,
-  image_list           jsonb,
-  priority_listing     boolean default false,
-  bold_title           boolean default false,
-  highlight            boolean default false,
-  description          text,
-  excel_url            text,
-  sold                 boolean default false, -- označení "prodáno"
-  sold_at              timestamptz,           -- kdy bylo prodáno
-  raw                  jsonb,                 -- celý produkt pro re-export do Excelu
-  date_added           date,
-  created_at           timestamptz default now()
-);
+## 3️⃣ Zapni přihlašování (Authentication)
+1. Levé menu **Build → Authentication → Get started**.
+2. Záložka **Sign-in method** → povol **Email/Password** → **Save**.
+3. Záložka **Users** → **Add user**:
+   - **Email:** `retroaukce@email.com`  ⚠️ **malými písmeny** (musí sedět s pravidly i configem)
+   - **Password:** zvol silné heslo 🔐 (tímhle se pak budeš přihlašovat do appky)
 
--- Zapneme zabezpečení a povolíme čtení/zápis pro veřejný (anon) klíč.
--- (Interní nástroj – pokud chceš přísnější přístup, uprav políčky později.)
-alter table public.products enable row level security;
+## 4️⃣ Nasaď bezpečnostní pravidla
+1. **Firestore Database → záložka Rules**.
+2. Vlož obsah souboru **`firestore.rules`** z tohoto repa a klikni **Publish**:
 
-create policy "anon read"   on public.products for select to anon using (true);
-create policy "anon insert" on public.products for insert to anon with check (true);
-create policy "anon update" on public.products for update to anon using (true) with check (true);
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.email == 'retroaukce@email.com';
+    }
+    match /products/{productId} {
+      allow read, write: if isOwner();
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
 ```
 
-✅ Tím vznikne tabulka `products` a povolí se zápis z appky i čtení v dashboardu.
+> 🔒 Tímto má plná práva (čtení, zápis i mazání) **jen** přihlášený vlastník
+> `retroaukce@email.com`. Kdokoli jiný je odmítnut.
+> Chceš pustit ještě další e-mail? Přidej ho do `isOwner()`:
+> `request.auth.token.email in ['retroaukce@email.com', 'dalsi@email.com']`.
 
-> 🔁 **Už jsi tabulku vytvořil dřív (bez sloupců sold/raw)?** Spusť jen tuto migraci:
-> ```sql
-> alter table public.products add column if not exists sold boolean default false;
-> alter table public.products add column if not exists sold_at timestamptz;
-> alter table public.products add column if not exists raw jsonb;
-> ```
-
-## 3️⃣ Zkopíruj klíče do `supabase-config.js`
-1. V Supabase jdi do **Project Settings** ⚙️ → **API**
-2. Najdi:
-   - **Project URL** (např. `https://abcxyz.supabase.co`) 🔗
-   - **anon public** key (dlouhý řetězec) 🔑
-3. Otevři soubor **`supabase-config.js`** a doplň je:
+## 5️⃣ Config je už v repu
+Web app config najdeš ve **Firebase Console → ⚙️ Project settings → Your apps → Web app → Config**.
+V tomhle projektu už je vyplněný v souboru **`firebase-config.js`**:
 
 ```js
-const SUPABASE_URL = "https://abcxyz.supabase.co";
-const SUPABASE_ANON_KEY = "sem-vlož-anon-public-key";
+const firebaseConfig = {
+  apiKey: "…",
+  authDomain: "iaukro.firebaseapp.com",
+  projectId: "iaukro",
+  storageBucket: "iaukro.firebasestorage.app",
+  messagingSenderId: "…",
+  appId: "…"
+};
+window.OWNER_EMAIL = "retroaukce@email.com";
 ```
 
-> 💡 `anon` klíč je určený do prohlížeče – je to v pořádku. Nikdy sem ale nedávej `service_role` klíč!
+> 💡 Tyhle hodnoty jsou určené do prohlížeče – je to v pořádku, data chrání
+> pravidla + přihlášení, ne utajení configu.
 
-## 4️⃣ Vyzkoušej lokálně 🧪
-Ve složce projektu spusť malý server (kvůli načítání kategorií a fetchům):
+## 6️⃣ Přenes stará data ze Supabase (bez ztráty) 🔁
+Původní data zůstávají v Supabase jako záloha. Přeneseme je do Firestore jednou:
+1. Spusť web (lokálně `python -m http.server 8000`, nebo rovnou na Vercelu).
+2. Otevři **`/migrate.html`** → přihlas se jako `retroaukce@email.com`.
+3. **1) Načíst ze Supabase** → **2) Zapsat do Firestore**.
+4. Zkontroluj **dashboard.html** – produkty tam musí naskočit. 🎉
 
+> ⚠️ Migraci spusť jen jednou (zápis přepisuje podle `product_id`).
+
+## 7️⃣ Vyzkoušej lokálně 🧪
 ```bash
 python -m http.server 8000
 ```
-
 - Appka: <http://localhost:8000/index.html>
 - Dashboard: <http://localhost:8000/dashboard.html>
 
-Projdi appku (zadej ID → 3 fotky → detaily → **Přidat produkt** → **Odeslat**).
-Pak otevři **dashboard** – produkt tam musí naskočit. 🎉
+Nejdřív se přihlásíš (Firebase Auth). Pak projdi appku
+(zadej ID → 3 fotky → detaily → **Přidat produkt** → **Odeslat**).
+Produkt musí naskočit v **dashboardu**. 🎉
 
-## 5️⃣ Nahraj na GitHub 🐙
-Pokud používáš existující repo `AKRPHFIN`:
-
+## 8️⃣ Nahraj na GitHub a deploy na Vercel 🚀
 ```bash
 git add .
-git commit -m "ID produktu, nový popis, dashboard + Supabase"
+git commit -m "Migrace na Firebase (Firestore + Auth)"
 git push
 ```
+Na Vercelu je to statický web – **Framework Preset: Other**, Build & Output nech prázdné.
 
-## 6️⃣ Deploy na Vercel 🚀
-1. Jdi na [vercel.com](https://vercel.com) → **Sign in** přes GitHub.
-2. **Add New… → Project** ➕
-3. Vyber repo **`AKRPHFIN`** → **Import**
-4. Nastavení nech výchozí:
-   - **Framework Preset:** `Other`
-   - Build & Output nech prázdné (je to statický web, žádný build netřeba)
-5. Klikni **Deploy** a počkej ~1 minutu. ⏳
-6. Dostaneš adresu typu `https://akrphfin.vercel.app` 🌍
-   - Appka: `…/index.html`
-   - Dashboard: `…/dashboard.html`
-
-## 7️⃣ Hotovo ✅
+## ✅ Hotovo
 - Focení a generování Excelu funguje jako dřív. 📸
-- Po odeslání se produkty **navíc uloží do Supabase** a hned se objeví v **dashboardu**. 🗄️
-- Obě stránky jsou online přes Vercel a sdílí stejnou databázi. 🔗
-
----
-
-### 🔒 Bonus (doporučení)
-- Chceš, aby data **nešla veřejně číst/zapisovat**? Nasaď na Vercel **Password Protection** (Project → Settings → Deployment Protection), nebo mi řekni a přidáme jednoduché přihlášení přes Supabase Auth.
-- V Supabase → **Table Editor** vidíš data i ručně a můžeš je editovat/mazat. 🧹
+- Po přihlášení se produkty ukládají do **Firestore** a hned se objeví v **dashboardu**. 🗄️
+- Data vidíš i ručně ve **Firebase Console → Firestore Database**. 🧹

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔁 iAUKRO – Migrace dat Supabase → Firestore</title>
+  <style>
+    body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:#f4f5fa;
+      color:#1a1a2e;margin:0;padding:32px 16px;line-height:1.5}
+    .wrap{max-width:720px;margin:0 auto;background:#fff;border-radius:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.08);padding:28px 26px}
+    h1{font-size:1.4rem;margin:0 0 6px}
+    p.sub{margin:0 0 20px;color:#5b6472;font-size:.92rem}
+    .steps{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+    button{border:0;border-radius:11px;padding:12px 18px;font-weight:700;font-size:.95rem;
+      cursor:pointer;font-family:inherit;transition:filter .15s}
+    button:disabled{opacity:.5;cursor:default}
+    .btn-load{background:#2f9e6f;color:#fff}
+    .btn-write{background:#6b5bff;color:#fff}
+    button:not(:disabled):hover{filter:brightness(1.07)}
+    .note{background:#fff8e6;border:1px solid #ffe08a;border-radius:11px;padding:12px 14px;
+      font-size:.85rem;margin:0 0 18px}
+    #log{background:#0f111a;color:#c7f5d9;border-radius:12px;padding:16px;font-size:.82rem;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;
+      max-height:340px;overflow:auto;min-height:80px}
+    .bar{height:10px;background:#e6e8f0;border-radius:999px;overflow:hidden;margin:14px 0 4px;display:none}
+    .bar>span{display:block;height:100%;width:0;background:#6b5bff;transition:width .2s}
+    a.back{display:inline-block;margin-top:18px;color:#6b5bff;text-decoration:none;font-weight:600}
+  </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <!-- Supabase (jen tady, pro jednorázové čtení zdrojových dat) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="firebase-config.js"></script>
+  <script src="auth-gate.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔁 Migrace dat: Supabase → Firestore</h1>
+    <p class="sub">Jednorázový přenos všech produktů. Data v Supabase zůstanou nedotčená jako záloha.</p>
+
+    <div class="note">
+      ⚠️ Spusť <strong>jen jednou</strong>. Zápis používá <code>product_id</code> jako ID dokumentu –
+      opětovné spuštění by přepsalo případné změny (např. „prodáno"), které jsi mezitím udělal ve Firestore.
+    </div>
+
+    <div class="steps">
+      <button id="btn-load" class="btn-load">1) Načíst ze Supabase</button>
+      <button id="btn-write" class="btn-write" disabled>2) Zapsat do Firestore</button>
+    </div>
+
+    <div class="bar" id="bar"><span id="bar-fill"></span></div>
+    <div id="log">Přihlas se jako vlastník…</div>
+
+    <a class="back" href="dashboard.html">← Zpět na dashboard</a>
+  </div>
+
+  <script src="migrate.js"></script>
+</body>
+</html>

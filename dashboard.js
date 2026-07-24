@@ -1,6 +1,6 @@
 /* ---------------------------------
    iAUKRO Dashboard – přehled produktů
-   Čte data z Supabase (tabulka "products"),
+   Čte data z Firestore (kolekce "products"),
    umožňuje označit "prodáno" a vyexportovat
    Excel ve stejném formátu jako appka (bez prodaných).
 -----------------------------------*/
@@ -66,23 +66,29 @@ function getRoundedISODate() {
 
 /* --- Načtení dat --- */
 async function loadProducts() {
-  if (!window.supabaseClient) {
-    showStatus("⚠️ Supabase není nastaven. Doplň údaje v supabase-config.js.", "is-warning");
+  if (!window.db) {
+    showStatus("⚠️ Firebase není nastaven. Zkontroluj firebase-config.js.", "is-warning");
     container.innerHTML = "";
     return;
   }
   showStatus("⏳ Načítám produkty…");
-  const { data, error } = await window.supabaseClient
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    showStatus("❌ Chyba při načítání: " + error.message, "is-danger");
+  let snap;
+  try {
+    snap = await window.db.collection("products").get();
+  } catch (e) {
+    showStatus("❌ Chyba při načítání: " + (e.message || e), "is-danger");
     return;
   }
   hideStatus();
-  allProducts = data || [];
+  // doc.id si uložíme do _docId (potřebujeme ho pro update "prodáno").
+  // Firestore Timestamp převedeme na ISO string, ať sedí s appkou i řazením.
+  allProducts = snap.docs.map((doc) => {
+    const d = doc.data() || {};
+    d._docId = doc.id;
+    if (d.created_at && typeof d.created_at.toDate === "function") d.created_at = d.created_at.toDate().toISOString();
+    if (d.sold_at && typeof d.sold_at.toDate === "function") d.sold_at = d.sold_at.toDate().toISOString();
+    return d;
+  });
   // Řazení: nejnovější nahoře; při shodném čase (hromadný import) podle čísla ID sestupně
   const numOf = (pid) => {
     const m = /^([A-Za-z]+)(\d+)$/.exec(pid || "");
@@ -181,19 +187,20 @@ function card(p) {
 
 /* --- Označit / zrušit prodáno --- */
 async function toggleSold(p, btn) {
-  if (!window.supabaseClient) return;
+  if (!window.db) return;
   const newVal = !p.sold;
   btn.classList.add("is-loading");
-  const { error } = await window.supabaseClient
-    .from("products")
-    .update({ sold: newVal, sold_at: newVal ? new Date().toISOString() : null })
-    .eq("id", p.id);
-  btn.classList.remove("is-loading");
-
-  if (error) {
-    showStatus("❌ Nepovedlo se uložit: " + error.message, "is-danger");
+  try {
+    await window.db.collection("products").doc(p._docId).update({
+      sold: newVal,
+      sold_at: newVal ? new Date().toISOString() : null
+    });
+  } catch (e) {
+    btn.classList.remove("is-loading");
+    showStatus("❌ Nepovedlo se uložit: " + (e.message || e), "is-danger");
     return;
   }
+  btn.classList.remove("is-loading");
   p.sold = newVal;
   updateStats();
   render();
@@ -279,5 +286,5 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closePhotos();
 });
 
-/* --- Start --- */
-loadProducts();
+/* --- Start (až po přihlášení vlastníka) --- */
+window.onAuthReady(loadProducts);

@@ -532,30 +532,27 @@ function advanceProductId() {
   setProductIdState(productIdPrefix, productIdNum + 1, productIdWidth);
 }
 
-// Načte poslední použité ID z databáze (Supabase) a předvyplní další
+// Načte poslední použité ID z databáze (Firestore) a předvyplní další
 async function loadLastProductId() {
   let lastId = null;
 
-  // 1) primárně z databáze (Supabase) – bereme ID s NEJVYŠŠÍM číslem
+  // 1) primárně z databáze (Firestore) – bereme ID s NEJVYŠŠÍM číslem
   //    (ne podle času vložení, hromadný import má stejný čas u všech)
   try {
-    if (window.supabaseClient) {
-      const { data, error } = await window.supabaseClient
-        .from("products")
-        .select("product_id");
-      if (!error && data && data.length) {
-        let bestNum = -1;
-        data.forEach((r) => {
-          const p = parseProductId(r.product_id);
-          if (p && p.num > bestNum) {
-            bestNum = p.num;
-            lastId = r.product_id;
-          }
-        });
-      }
+    if (window.db) {
+      const snap = await window.db.collection("products").get();
+      let bestNum = -1;
+      snap.forEach((doc) => {
+        const pid = (doc.data() || {}).product_id;
+        const p = parseProductId(pid);
+        if (p && p.num > bestNum) {
+          bestNum = p.num;
+          lastId = pid;
+        }
+      });
     }
   } catch (e) {
-    // Supabase nedostupné – použijeme localStorage
+    // Databáze nedostupná – použijeme localStorage
   }
 
   // 2) fallback z localStorage
@@ -581,17 +578,18 @@ async function loadLastProductId() {
 // Ověří, že počáteční ID je volné – tj. je vyšší než nejvyšší už použité
 // ID se stejným prefixem. Tím zajistíme, že se ID nikdy nepoužije podruhé.
 async function checkStartIdFree(parsed) {
-  if (!window.supabaseClient) return { ok: true };
+  if (!window.db) return { ok: true };
   try {
-    const { data, error } = await window.supabaseClient
-      .from("products")
-      .select("product_id")
-      .ilike("product_id", parsed.prefix + "%");
-    if (error) return { ok: true }; // při chybě sítě neblokujeme
+    // Prefixový dotaz: product_id v rozsahu <prefix, prefix + >
+    const snap = await window.db
+      .collection("products")
+      .where("product_id", ">=", parsed.prefix)
+      .where("product_id", "<=", parsed.prefix + "")
+      .get();
 
     let maxNum = 0;
-    (data || []).forEach((r) => {
-      const m = parseProductId(r.product_id);
+    snap.forEach((doc) => {
+      const m = parseProductId((doc.data() || {}).product_id);
       if (m && m.prefix === parsed.prefix && m.num > maxNum) maxNum = m.num;
     });
 
@@ -604,7 +602,8 @@ async function checkStartIdFree(parsed) {
   }
 }
 
-loadLastProductId();
+// Spustíme až po přihlášení vlastníka (data jsou za Firebase Auth).
+window.onAuthReady(loadLastProductId);
 
 /* ---------------------------------
    Focení 3 fotek
@@ -1036,8 +1035,8 @@ async function finish() {
     const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     const excelUrl = await uploadFileForExcel(file, randomSuffix);
 
-    // Po vygenerování Excelu naimportujeme produkty i do dashboardu (Supabase)
-    await syncProductsToSupabase(products, excelUrl);
+    // Po vygenerování Excelu naimportujeme produkty i do dashboardu (Firestore)
+    await syncProductsToFirestore(products, excelUrl);
 
     // Zkopírování odkazu do schránky
     navigator.clipboard.writeText(excelUrl).then(
@@ -1094,50 +1093,68 @@ async function uploadFileForExcel(file, randomSuffix) {
 }
 
 /* ---------------------------------
-   Import produktů do dashboardu (Supabase)
+   Import produktů do dashboardu (Firestore)
    – zavolá se v finish() po vytvoření Excelu.
-   Když Supabase není nastaven, tiše se přeskočí
+   Když Firebase není nastaven, tiše se přeskočí
    a appka dál funguje jen s Excelem.
 -----------------------------------*/
-async function syncProductsToSupabase(products, excelUrl) {
-  if (!window.supabaseClient) {
-    updateStatus("ℹ️ Supabase není nastaven – import do dashboardu přeskočen.");
+async function syncProductsToFirestore(products, excelUrl) {
+  if (!window.db) {
+    updateStatus("ℹ️ Firebase není nastaven – import do dashboardu přeskočen.");
     return;
   }
 
   // Importujeme jen produkty, které ještě v databázi nejsou (kvůli
-  // opakovanému "Odeslat" nechceme duplicity). ID jsou navíc unikátní
-  // na úrovni databáze, takže se nedají použít podruhé.
+  // opakovanému "Odeslat" nechceme duplicity). product_id používáme jako
+  // ID dokumentu, takže se nedá použít podruhé.
   const pending = products.filter((p) => !p.syncedToDb);
   if (!pending.length) return;
 
   try {
     updateStatus("🗄️ Importuji produkty do dashboardu...");
-    const rows = pending.map((p) => ({
-      product_id: p.productId || null,
-      name: p.name,
-      price: p.auctionPriceAmount,
-      location: p.locationName || null,
-      ext_id: p.extId,
-      category_id: p.categoryId,
-      shipping_template_id: p.shippingTemplateId,
-      images: p.images,
-      image_list: p.images ? p.images.split(" ").filter(Boolean) : [],
-      priority_listing: !!p.priorityListing,
-      bold_title: !!p.boldTitle,
-      highlight: !!p.highlight,
-      description: p.description,
-      excel_url: excelUrl || null,
-      sold: false,
-      raw: p, // celý produkt pro pozdější re-export ve formátu pro Aukro
-      date_added: p.dateAdded
-    }));
+    const col = window.db.collection("products");
 
-    // insert (ne upsert) => existující ID nikdy nepřepíšeme
-    const { error } = await window.supabaseClient.from("products").insert(rows);
-    if (error) throw error;
+    // Zjistíme, která product_id už v databázi jsou – ta nikdy nepřepíšeme.
+    const withId = pending.filter((p) => p.productId);
+    const existing = new Set();
+    const checks = await Promise.all(
+      withId.map((p) => col.doc(p.productId).get().then((s) => (s.exists ? p.productId : null)))
+    );
+    checks.forEach((id) => { if (id) existing.add(id); });
+
+    // Zapíšeme jen produkty, jejichž ID ještě neexistuje.
+    const toWrite = pending.filter((p) => !(p.productId && existing.has(p.productId)));
+    if (toWrite.length) {
+      const batch = window.db.batch();
+      toWrite.forEach((p) => {
+        const ref = p.productId ? col.doc(p.productId) : col.doc();
+        batch.set(ref, {
+          product_id: p.productId || null,
+          name: p.name,
+          price: p.auctionPriceAmount,
+          location: p.locationName || null,
+          ext_id: p.extId,
+          category_id: p.categoryId,
+          shipping_template_id: p.shippingTemplateId,
+          images: p.images,
+          image_list: p.images ? p.images.split(" ").filter(Boolean) : [],
+          priority_listing: !!p.priorityListing,
+          bold_title: !!p.boldTitle,
+          highlight: !!p.highlight,
+          description: p.description,
+          excel_url: excelUrl || null,
+          sold: false,
+          sold_at: null,
+          raw: p, // celý produkt pro pozdější re-export ve formátu pro Aukro
+          date_added: p.dateAdded,
+          created_at: new Date().toISOString()
+        });
+      });
+      await batch.commit();
+    }
 
     // Označíme produkty jako zapsané, ať je při dalším "Odeslat" neduplikujeme
+    // (i ty, co už v DB existovaly – ať se nezkoušejí donekonečna).
     const all = JSON.parse(localStorage.getItem("products")) || [];
     const doneIds = new Set(pending.map((p) => p.productId));
     all.forEach((p) => {
@@ -1145,14 +1162,14 @@ async function syncProductsToSupabase(products, excelUrl) {
     });
     localStorage.setItem("products", JSON.stringify(all));
 
-    updateStatus("✅ Produkty naimportovány do dashboardu.");
+    if (existing.size) {
+      updateStatus(`✅ Naimportováno ${toWrite.length}. ⛔ ${existing.size} ID už existovalo – přeskočeno.`);
+    } else {
+      updateStatus("✅ Produkty naimportovány do dashboardu.");
+    }
   } catch (e) {
     const msg = (e && e.message) || e;
-    if (String(msg).toLowerCase().includes("duplicate")) {
-      updateStatus("⛔ Některé ID už v databázi existuje – produkty se ZNOVU nepoužijí.");
-    } else {
-      updateStatus("⚠️ Import do dashboardu selhal: " + msg);
-    }
+    updateStatus("⚠️ Import do dashboardu selhal: " + msg);
   }
 }
 
