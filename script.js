@@ -2,7 +2,7 @@
    Základní konfigurace
 -----------------------------------*/
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/drrzl7evt/auto/upload";
-const CLOUDINARY_UPLOAD_PRESET = "AKR_Preset";
+const CLOUDINARY_UPLOAD_PRESET = "Retroaukce";
 
 /* ---------------------------------
    Proměnné
